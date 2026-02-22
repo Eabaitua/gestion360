@@ -1,0 +1,116 @@
+/* Fondo oscuro difuminado */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Caja del modal */
+.modal {
+  background: #ffffff;
+  padding: 35px;
+  border-radius: 18px;
+  width: 380px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: aparecer 0.2s ease-in-out;
+}
+
+@keyframes aparecer {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Títulos */
+.modal h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.modal h3,
+.modal h4 {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Inputs */
+.modal input,
+.modal select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.modal input:focus,
+.modal select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Botones */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* Botón cancelar */
+.modal-buttons button:first-child {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.modal-buttons button:first-child:hover {
+  background: #cbd5e1;
+}
+
+/* Botón confirmar */
+.modal-buttons button:last-child {
+  background: #22c55e;
+  color: white;
+}
+
+.modal-buttons button:last-child:hover {
+  background: #16a34a;
+}
+
+/* Total destacado */
+.modal p strong {
+  color: #0f172a;
+}
