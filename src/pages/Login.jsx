@@ -13,7 +13,11 @@ function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    if (usuario.trim() === "eduardo" && password.trim() === "eduardo") {
+    // 🔐 Normalizamos a minúsculas
+    const userNormalizado = usuario.trim().toLowerCase();
+    const passNormalizado = password.trim().toLowerCase();
+
+    if (userNormalizado === "eduardo" && passNormalizado === "eduardo") {
       localStorage.setItem("auth", "true");
       setError("");
       navigate("/dashboard");
