@@ -2,93 +2,85 @@ import "./ModalReserva.css";
 import { useState } from "react";
 
 function ModalReserva({ datos, onCerrar, onConfirmar }) {
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
 
   const [tipo, setTipo] = useState("partido");
+  const [pagado, setPagado] = useState(true);
 
-  const [modoPago, setModoPago] = useState(""); // online o club
-  const [metodoPago, setMetodoPago] = useState("tarjeta");
+  // 🔥 Base datos jugadores
+  const jugadoresBD = [
+    "Iker", "Unai", "Mikel", "Ander", "Gorka",
+    "Jon", "Aitor", "Markel", "Asier", "Eneko",
+    "Hugo", "Mario", "Dani", "Alex", "Pablo",
+    "Carlos", "Luis", "Sergio", "Raúl", "David"
+  ];
 
-  const [titular, setTitular] = useState("");
-  const [numeroTarjeta, setNumeroTarjeta] = useState("");
-  const [caducidad, setCaducidad] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [telefonoBizum, setTelefonoBizum] = useState("");
+  const monitores = ["Masa", "Jon", "Kepa", "Aitor"];
+
+  const [jugadoresSeleccionados, setJugadoresSeleccionados] = useState([]);
+  const [monitor, setMonitor] = useState("");
 
   if (!datos) return null;
 
+  const toggleJugador = (j) => {
+    if (jugadoresSeleccionados.includes(j)) {
+      setJugadoresSeleccionados(
+        jugadoresSeleccionados.filter((x) => x !== j)
+      );
+    } else {
+      if (jugadoresSeleccionados.length < 4) {
+        setJugadoresSeleccionados([...jugadoresSeleccionados, j]);
+      }
+    }
+  };
+
   const confirmar = () => {
-    if (!nombre || !apellido) {
-      alert("Completa nombre y apellido");
+
+    if (tipo === "partido" && jugadoresSeleccionados.length !== 4) {
+      alert("Debes seleccionar 4 jugadores");
       return;
     }
 
-    if (!modoPago) {
-      alert("Selecciona cómo quieres pagar");
+    if (
+      (tipo === "clase" || tipo === "adultos" || tipo === "menores") &&
+      !monitor
+    ) {
+      alert("Selecciona un monitor");
       return;
     }
 
-    // 🔥 PAGO EN EL CLUB
-    if (modoPago === "club") {
-      onConfirmar(nombre, apellido, false, "Pendiente en club", tipo);
-      return;
-    }
+    // 🔥 Las clases siempre pagadas
+    const estadoPago =
+      tipo === "partido" ? pagado : true;
 
-    // 🔥 PAGO ONLINE
-    if (modoPago === "online") {
-      if (metodoPago === "tarjeta") {
-        if (
-          !titular ||
-          numeroTarjeta.length < 12 ||
-          !caducidad ||
-          cvv.length < 3
-        ) {
-          alert("Completa correctamente los datos de la tarjeta");
-          return;
-        }
-      }
-
-      if (metodoPago === "bizum") {
-        if (telefonoBizum.length < 9) {
-          alert("Introduce un número válido para Bizum");
-          return;
-        }
-      }
-
-      onConfirmar(nombre, apellido, true, metodoPago, tipo);
-    }
+    onConfirmar(
+      "", 
+      "",
+      estadoPago,
+      "manual",
+      tipo,
+      jugadoresSeleccionados,
+      monitor
+    );
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal">
+
         <h2>Nueva Reserva</h2>
 
         <p><strong>Pista:</strong> {datos.pista}</p>
-        <p><strong>Fecha:</strong> {datos.fecha}</p>
         <p><strong>Hora:</strong> {datos.hora}</p>
-        <p><strong>Total:</strong> {datos.precio}€</p>
-
-        <input
-          type="text"
-          placeholder="Nombre"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="Apellido"
-          value={apellido}
-          onChange={(e) => setApellido(e.target.value)}
-        />
-
-        <h3>Tipo de reserva</h3>
+        <p><strong>Precio:</strong> {datos.precio}€</p>
 
         <select
           value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
+          onChange={(e) => {
+            setTipo(e.target.value);
+            if (e.target.value !== "partido") {
+              setPagado(true);
+            }
+          }}
         >
           <option value="partido">🎾 Partido</option>
           <option value="clase">👨‍🏫 Clase particular</option>
@@ -96,76 +88,76 @@ function ModalReserva({ datos, onCerrar, onConfirmar }) {
           <option value="menores">🧒 Escuela menores</option>
         </select>
 
-        <h3>¿Cómo quieres pagar?</h3>
-
-        <select
-          value={modoPago}
-          onChange={(e) => setModoPago(e.target.value)}
-        >
-          <option value="">Seleccionar opción</option>
-          <option value="online">Pagar online</option>
-          <option value="club">Pagar en el club</option>
-        </select>
-
-        {modoPago === "online" && (
+        {/* 🎾 PARTIDO */}
+        {tipo === "partido" && (
           <>
-            <h4>Método online</h4>
+            <h4>Selecciona 4 jugadores</h4>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {jugadoresBD.map((j) => (
+                <button
+                  key={j}
+                  onClick={() => toggleJugador(j)}
+                  style={{
+                    background: jugadoresSeleccionados.includes(j)
+                      ? "#3b82f6"
+                      : "#e5e7eb",
+                    color: jugadoresSeleccionados.includes(j)
+                      ? "white"
+                      : "black",
+                    border: "none",
+                    padding: "6px 10px",
+                    borderRadius: "6px",
+                    cursor: "pointer"
+                  }}
+                >
+                  {j}
+                </button>
+              ))}
+            </div>
+
+            {/* 🔥 OPCIÓN PAGADO */}
+            <div style={{ marginTop: "15px" }}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={pagado}
+                  onChange={() => setPagado(!pagado)}
+                />
+                &nbsp; Partido pagado
+              </label>
+            </div>
+          </>
+        )}
+
+        {/* 👨‍🏫 CLASES */}
+        {(tipo === "clase" ||
+          tipo === "adultos" ||
+          tipo === "menores") && (
+          <>
+            <h4>Selecciona monitor</h4>
 
             <select
-              value={metodoPago}
-              onChange={(e) => setMetodoPago(e.target.value)}
+              value={monitor}
+              onChange={(e) => setMonitor(e.target.value)}
             >
-              <option value="tarjeta">Tarjeta</option>
-              <option value="bizum">Bizum</option>
+              <option value="">Seleccionar monitor</option>
+              {monitores.map((m) => (
+                <option key={m}>{m}</option>
+              ))}
             </select>
 
-            {metodoPago === "tarjeta" && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Nombre del titular"
-                  value={titular}
-                  onChange={(e) => setTitular(e.target.value)}
-                />
-
-                <input
-                  type="text"
-                  placeholder="Número de tarjeta"
-                  value={numeroTarjeta}
-                  onChange={(e) => setNumeroTarjeta(e.target.value)}
-                />
-
-                <input
-                  type="text"
-                  placeholder="MM/AA"
-                  value={caducidad}
-                  onChange={(e) => setCaducidad(e.target.value)}
-                />
-
-                <input
-                  type="text"
-                  placeholder="CVV"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                />
-              </>
-            )}
-
-            {metodoPago === "bizum" && (
-              <input
-                type="text"
-                placeholder="Número de teléfono Bizum"
-                value={telefonoBizum}
-                onChange={(e) => setTelefonoBizum(e.target.value)}
-              />
-            )}
+            <p style={{ marginTop: "10px", color: "#16a34a" }}>
+              ✔ Las clases se registran como pagadas automáticamente
+            </p>
           </>
         )}
 
         <div className="modal-buttons">
           <button onClick={onCerrar}>Cancelar</button>
-          <button onClick={confirmar}>Confirmar reserva</button>
+          <button onClick={confirmar}>Confirmar</button>
         </div>
+
       </div>
     </div>
   );

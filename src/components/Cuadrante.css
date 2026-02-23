@@ -1,50 +1,122 @@
 .cuadrante {
-  margin-top: 40px;
-  overflow-x: auto;
+  margin-top: 30px;
 }
 
 .cuadrante h3 {
   margin-bottom: 15px;
-  color: #1e293b;
 }
 
-table {
-  border-collapse: collapse;
+/* =========================
+   TABLA GENERAL
+========================= */
+
+.cuadrante table {
   width: 100%;
-  font-size: 13px;
+  border-collapse: collapse;
+  background: white;
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
 }
 
-th {
+.cuadrante th,
+.cuadrante td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.cuadrante th {
   background: #1e293b;
   color: white;
-  padding: 10px;
-  font-weight: 500;
-}
-
-td {
-  border: 1px solid #e2e8f0;
-  padding: 10px;
-  text-align: center;
-  transition: 0.2s ease;
+  font-weight: 600;
 }
 
 .pista-label {
   font-weight: 600;
-  background-color: #f1f5f9;
+  background: #f8fafc;
 }
 
+/* =========================
+   ESTADOS
+========================= */
+
 .libre {
-  background-color: #dcfce7;
+  background: #22c55e;
+  color: white;
+  transition: 0.2s;
 }
 
 .libre:hover {
-  background-color: #86efac;
-  transform: scale(1.02);
+  opacity: 0.85;
 }
 
 .ocupada {
-  background-color: #fbcfe8;
-  cursor: not-allowed;
+  color: white;
+  font-weight: 600;
+}
+
+.ocupada.partido {
+  background: #3b82f6;
+}
+
+.ocupada.clase {
+  background: #f59e0b;
+}
+
+.ocupada.adultos {
+  background: #8b5cf6;
+}
+
+.ocupada.menores {
+  background: #ec4899;
+}
+
+/* =========================
+   RESPONSIVE MÓVIL
+========================= */
+
+@media (max-width: 1024px) {
+
+  .cuadrante table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .cuadrante th,
+  .cuadrante td {
+    min-width: 120px;
+  }
+
+}
+
+/* 🔥 TOOLTIP PRO */
+
+.ocupada {
+  position: relative;
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  transition: 0.2s ease;
+  z-index: 1000;
+}
+
+.ocupada:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
 }

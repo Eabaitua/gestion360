@@ -1,6 +1,7 @@
 import "./Cuadrante.css";
 
 function Cuadrante({ reservas, fechaSeleccionada, onCrearReserva }) {
+
   const pistas = Array.from({ length: 11 }, (_, i) => `Pista ${i + 1}`);
   const horas = Array.from({ length: 11 }, (_, i) =>
     `${(10 + i).toString().padStart(2, "0")}:00`
@@ -58,13 +59,39 @@ function Cuadrante({ reservas, fechaSeleccionada, onCrearReserva }) {
                         onCrearReserva(p, fechaSeleccionada, h);
                       }
                     }}
-                    style={{
-                      cursor: ocupada ? "not-allowed" : "pointer"
-                    }}
                   >
-                    {ocupada
-                      ? textoTipo[reserva.tipo]
-                      : "Libre"}
+                    {ocupada ? (
+                      <>
+                        {textoTipo[reserva.tipo]}
+
+                        {/* 🔥 TOOLTIP */}
+                        <div className="tooltip">
+                          <strong>{textoTipo[reserva.tipo]}</strong>
+
+                          {reserva.tipo === "partido" && reserva.jugadores && (
+                            <div>
+                              👥 {reserva.jugadores.join(", ")}
+                            </div>
+                          )}
+
+                          {(reserva.tipo === "clase" ||
+                            reserva.tipo === "adultos" ||
+                            reserva.tipo === "menores") &&
+                            reserva.monitor && (
+                              <div>
+                                👨‍🏫 Monitor: {reserva.monitor}
+                              </div>
+                          )}
+
+                          <div>💰 {reserva.precio}€</div>
+                          <div>
+                            {reserva.pagado ? "✅ Pagado" : "❌ Pendiente"}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      "Libre"
+                    )}
                   </td>
                 );
               })}

@@ -4,6 +4,7 @@ import Cuadrante from "../components/Cuadrante";
 import ModalReserva from "../components/ModalReserva";
 
 function Reservas() {
+
   const pistas = Array.from({ length: 11 }, (_, i) => `Pista ${i + 1}`);
   const horasDisponibles = Array.from({ length: 11 }, (_, i) =>
     `${(10 + i).toString().padStart(2, "0")}:00`
@@ -26,27 +27,6 @@ function Reservas() {
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("");
 
-  // 🔐 CONFIGURACIÓN SEGURA
-  const getClubConfig = () => {
-    try {
-      const data = localStorage.getItem("clubConfig");
-      if (!data) {
-        return {
-          energia: { consumoKwhPorHora: 3, precioKwh: 0.2 },
-          costesMonitor: { partido: 0, clase: 20, adultos: 18, menores: 16 }
-        };
-      }
-      return JSON.parse(data);
-    } catch {
-      return {
-        energia: { consumoKwhPorHora: 3, precioKwh: 0.2 },
-        costesMonitor: { partido: 0, clase: 20, adultos: 18, menores: 16 }
-      };
-    }
-  };
-
-  const clubModel = getClubConfig();
-
   useEffect(() => {
     localStorage.setItem("reservas", JSON.stringify(reservas));
   }, [reservas]);
@@ -56,9 +36,11 @@ function Reservas() {
     return horaNumero >= 18 ? 30 : 20;
   };
 
-  const costeEnergia =
-    clubModel.energia.consumoKwhPorHora *
-    clubModel.energia.precioKwh;
+  const cambiarDia = (dias) => {
+    const fecha = new Date(fechaSeleccionada);
+    fecha.setDate(fecha.getDate() + dias);
+    setFechaSeleccionada(fecha.toISOString().split("T")[0]);
+  };
 
   const abrirModal = (pista, fecha, hora) => {
     if (!pista || !fecha || !hora) {
@@ -83,11 +65,15 @@ function Reservas() {
     });
   };
 
-  const confirmarReserva = (nombre, apellido, pagado, metodo, tipo) => {
-    const costeMonitor = clubModel.costesMonitor[tipo] || 0;
-
-    const margen =
-      modalDatos.precio - costeEnergia - costeMonitor;
+  const confirmarReserva = (
+    nombre,
+    apellido,
+    pagado,
+    metodo,
+    tipo,
+    jugadores,
+    monitor
+  ) => {
 
     const nueva = {
       id: Date.now(),
@@ -95,20 +81,16 @@ function Reservas() {
       fecha: modalDatos.fecha,
       hora: modalDatos.hora,
       precio: modalDatos.precio,
-      jugador: `${nombre} ${apellido}`,
+      jugadorPrincipal: `${nombre} ${apellido}`,
       pagado,
       metodoPago: metodo || "-",
       tipo,
-      costeEnergia,
-      costeMonitor,
-      margen
+      jugadores: jugadores || [],
+      monitor: monitor || null
     };
 
     setReservas((prev) => [...prev, nueva]);
     setModalDatos(null);
-    setPista("");
-    setFecha("");
-    setHora("");
   };
 
   const eliminarReserva = (id) => {
@@ -124,8 +106,9 @@ function Reservas() {
 
   return (
     <DashboardLayout>
+
       <h1 style={{ marginBottom: "20px" }}>
-        Gestión de Reservas (SaaS dinámico)
+        Gestión de Reservas PRO
       </h1>
 
       {/* FORMULARIO */}
@@ -159,6 +142,31 @@ function Reservas() {
         </button>
       </div>
 
+      {/* SELECTOR DÍA PRO */}
+      <div style={selectorDiaWrapper}>
+        <button style={navButton} onClick={() => cambiarDia(-1)}>⬅</button>
+
+        <input
+          type="date"
+          value={fechaSeleccionada}
+          onChange={(e) => setFechaSeleccionada(e.target.value)}
+          style={inputStyle}
+        />
+
+        <button style={navButton} onClick={() => cambiarDia(1)}>➡</button>
+
+        <button style={todayButton} onClick={() => setFechaSeleccionada(hoy)}>
+          Hoy
+        </button>
+      </div>
+
+      {/* CUADRANTE */}
+      <Cuadrante
+        reservas={reservas}
+        fechaSeleccionada={fechaSeleccionada}
+        onCrearReserva={abrirModal}
+      />
+
       {/* TABLA */}
       <div style={tableWrapper}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -167,31 +175,34 @@ function Reservas() {
               <th style={thStyle}>Pista</th>
               <th style={thStyle}>Hora</th>
               <th style={thStyle}>Tipo</th>
+              <th style={thStyle}>Jugadores / Monitor</th>
               <th style={thStyle}>Precio</th>
-              <th style={thStyle}>Energía</th>
-              <th style={thStyle}>Monitor</th>
-              <th style={thStyle}>Margen</th>
+              <th style={thStyle}>Estado</th>
+              <th style={thStyle}>Acciones</th>
             </tr>
           </thead>
+
           <tbody>
             {reservas.map((r) => (
               <tr key={r.id} style={{ textAlign: "center" }}>
                 <td style={tdStyle}>{r.pista}</td>
                 <td style={tdStyle}>{r.hora}</td>
                 <td style={tdStyle}>{textoTipo[r.tipo]}</td>
+                <td style={tdStyle}>
+                  {r.tipo === "partido" && r.jugadores?.join(", ")}
+                  {(r.tipo === "clase" ||
+                    r.tipo === "adultos" ||
+                    r.tipo === "menores") &&
+                    r.monitor && `Monitor: ${r.monitor}`}
+                </td>
                 <td style={tdStyle}>{r.precio}€</td>
                 <td style={tdStyle}>
-                  {(r.costeEnergia || 0).toFixed(2)}€
+                  {r.pagado ? "Pagado ✅" : "Pendiente"}
                 </td>
-                <td style={tdStyle}>{r.costeMonitor || 0}€</td>
-                <td
-                  style={{
-                    ...tdStyle,
-                    fontWeight: "600",
-                    color: (r.margen || 0) > 0 ? "#16a34a" : "#dc2626"
-                  }}
-                >
-                  {(r.margen || 0).toFixed(2)}€
+                <td style={tdStyle}>
+                  <button onClick={() => eliminarReserva(r.id)} style={dangerButton}>
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))}
@@ -199,17 +210,12 @@ function Reservas() {
         </table>
       </div>
 
-      <Cuadrante
-        reservas={reservas}
-        fechaSeleccionada={fechaSeleccionada}
-        onCrearReserva={abrirModal}
-      />
-
       <ModalReserva
         datos={modalDatos}
         onCerrar={() => setModalDatos(null)}
         onConfirmar={confirmarReserva}
       />
+
     </DashboardLayout>
   );
 }
@@ -227,12 +233,41 @@ const formStyle = {
   marginBottom: "30px"
 };
 
+const selectorDiaWrapper = {
+  background: "white",
+  padding: "15px",
+  borderRadius: "12px",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+  marginBottom: "20px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: "10px"
+};
+
+const navButton = {
+  padding: "8px 12px",
+  borderRadius: "6px",
+  border: "none",
+  background: "#e5e7eb",
+  cursor: "pointer"
+};
+
+const todayButton = {
+  padding: "8px 12px",
+  borderRadius: "6px",
+  border: "none",
+  background: "#2563eb",
+  color: "white",
+  cursor: "pointer"
+};
+
 const tableWrapper = {
   background: "white",
   borderRadius: "12px",
   boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
   overflow: "hidden",
-  marginBottom: "40px"
+  marginTop: "30px"
 };
 
 const inputStyle = {
@@ -247,6 +282,15 @@ const primaryButton = {
   color: "white",
   padding: "10px 18px",
   borderRadius: "8px",
+  border: "none",
+  cursor: "pointer"
+};
+
+const dangerButton = {
+  background: "#ef4444",
+  color: "white",
+  padding: "6px 12px",
+  borderRadius: "6px",
   border: "none",
   cursor: "pointer"
 };
