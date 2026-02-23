@@ -42,8 +42,7 @@ function Dashboard() {
     beneficioNeto > 0 && ocupacion > 60
       ? "Excelente"
       : beneficioNeto > 0
-      ? "Estable"
-      : "Riesgo";
+      ? "Estable";
 
   const colorSalud =
     salud === "Excelente"
